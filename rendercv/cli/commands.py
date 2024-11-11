@@ -158,8 +158,6 @@ def cli_command_render(
 
 
     original_working_directory = pathlib.Path.cwd()
-    from pprint import pprint
-    pprint(original_working_directory)
 
     input_file_as_a_dict = data.read_a_yaml_file(input_file_path)
 
