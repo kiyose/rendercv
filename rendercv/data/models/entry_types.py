@@ -182,6 +182,11 @@ class OneLineEntry(RenderCVBaseModelWithExtraKeys):
         title="Details",
         description="The details of the OneLineEntry.",
     )
+    disabled: Optional[bool] = pydantic.Field(
+        default=False,
+        title="Disabled",
+        description="Disable this entry in output"
+    )
 
 
 class BulletEntry(RenderCVBaseModelWithExtraKeys):
@@ -190,6 +195,11 @@ class BulletEntry(RenderCVBaseModelWithExtraKeys):
     bullet: str = pydantic.Field(
         title="Bullet",
         description="The bullet of the BulletEntry.",
+    )
+    disabled: Optional[bool] = pydantic.Field(
+        default=False,
+        title="Disabled",
+        description="Disable this entry in output"
     )
 
 
@@ -246,6 +256,11 @@ class PublicationEntryBase(RenderCVBaseModelWithExtraKeys):
         default=None,
         title="Journal",
         description="The journal or conference name.",
+    )
+    disabled: Optional[bool] = pydantic.Field(
+        default=False,
+        title="Disabled",
+        description="Disable this entry in output"
     )
 
     @pydantic.model_validator(mode="after")  # type: ignore
@@ -330,6 +345,11 @@ class EntryBase(EntryWithDate):
         title="Highlights",
         description="The highlights of the event as a list of strings.",
         examples=["Did this.", "Did that."],
+    )
+    disabled: Optional[bool] = pydantic.Field(
+        default=False,
+        title="Disabled",
+        description="Disable this entry in output"
     )
 
     @pydantic.model_validator(mode="after")  # type: ignore
