@@ -8,6 +8,16 @@
           "description": "The bullet of the BulletEntry.",
           "title": "Bullet",
           "type": "string"
+        },
+        "disabled": {
+          "default": false,
+          "description": "Disable this entry in output",
+          "title": "Disabled",
+          "oneOf": [
+            {
+              "type": "boolean"
+            }
+          ]
         }
       },
       "required": [
@@ -258,6 +268,19 @@
             }
           ]
         },
+        "disabled_sections": {
+          "default": null,
+          "description": "Sections that should not be shown in the final CV.",
+          "title": "Disabled Sections",
+          "oneOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          ]
+        },
         "sections": {
           "default": null,
           "description": "The sections of the CV.",
@@ -416,6 +439,16 @@
                 "type": "string"
               },
               "type": "array"
+            }
+          ]
+        },
+        "disabled": {
+          "default": false,
+          "description": "Disable this entry in output",
+          "title": "Disabled",
+          "oneOf": [
+            {
+              "type": "boolean"
             }
           ]
         }
@@ -779,6 +812,16 @@
                 "type": "string"
               },
               "type": "array"
+            }
+          ]
+        },
+        "disabled": {
+          "default": false,
+          "description": "Disable this entry in output",
+          "title": "Disabled",
+          "oneOf": [
+            {
+              "type": "boolean"
             }
           ]
         }
@@ -1474,6 +1517,16 @@
               "type": "array"
             }
           ]
+        },
+        "disabled": {
+          "default": false,
+          "description": "Disable this entry in output",
+          "title": "Disabled",
+          "oneOf": [
+            {
+              "type": "boolean"
+            }
+          ]
         }
       },
       "required": [
@@ -1495,6 +1548,16 @@
           "description": "The details of the OneLineEntry.",
           "title": "Details",
           "type": "string"
+        },
+        "disabled": {
+          "default": false,
+          "description": "Disable this entry in output",
+          "title": "Disabled",
+          "oneOf": [
+            {
+              "type": "boolean"
+            }
+          ]
         }
       },
       "required": [
@@ -1591,6 +1654,16 @@
           "oneOf": [
             {
               "type": "string"
+            }
+          ]
+        },
+        "disabled": {
+          "default": false,
+          "description": "Disable this entry in output",
+          "title": "Disabled",
+          "oneOf": [
+            {
+              "type": "boolean"
             }
           ]
         },
