@@ -540,7 +540,7 @@ class CurriculumVitae(RenderCVBaseModelWithExtraKeys):
                 # Skip any sections that are empty, sections might be empty because
                 # all the entries have been filtered out
                 if not entries:
-                    break
+                    continue
 
                 title = computers.dictionary_key_to_proper_section_title(title)
 
