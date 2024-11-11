@@ -18,7 +18,8 @@ from .rendercv_settings import RenderCVSettings
 class RenderCVDataModel(RenderCVBaseModelWithoutExtraKeys):
     """This class binds both the CV and the design information together."""
 
-    cv: CurriculumVitae = pydantic.Field(
+    cv: Optional[CurriculumVitae] = pydantic.Field(
+        default = None,
         title="Curriculum Vitae",
         description="The data of the CV.",
     )
