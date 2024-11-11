@@ -1641,6 +1641,26 @@
       "additionalProperties": false,
       "description": "This class is the data model of the `render` command's settings.",
       "properties": {
+        "design_path": {
+          "default": null,
+          "description": "The file path to the yaml file containing the design.  The default value is null.",
+          "title": "Design File Path",
+          "oneOf": [
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "default_rendercv_settings_path": {
+          "default": null,
+          "description": "The file path to the yaml file containing the rendercv_settings.  The default value is null.",
+          "title": "RenderCV Settings Path",
+          "oneOf": [
+            {
+              "type": "string"
+            }
+          ]
+        },
         "output_folder_name": {
           "default": "rendercv_output",
           "description": "The name of the folder where the output files will be saved. The following placeholders can be used:\n- FULL_MONTH_NAME: Full name of the month\n- MONTH_ABBREVIATION: Abbreviation of the month\n- MONTH: Month as a number\n- MONTH_IN_TWO_DIGITS: Month as a number in two digits\n- YEAR: Year as a number\n- YEAR_IN_TWO_DIGITS: Year as a number in two digits\n- NAME: The name of the CV owner\n- NAME_IN_SNAKE_CASE: The name of the CV owner in snake case\n- NAME_IN_LOWER_SNAKE_CASE: The name of the CV owner in lower snake case\n- NAME_IN_UPPER_SNAKE_CASE: The name of the CV owner in upper snake case\n- NAME_IN_KEBAB_CASE: The name of the CV owner in kebab case\n- NAME_IN_LOWER_KEBAB_CASE: The name of the CV owner in lower kebab case\n- NAME_IN_UPPER_KEBAB_CASE: The name of the CV owner in upper kebab case\nThe default value is an empty string.\n- FULL_MONTH_NAME: Full name of the month\n- MONTH_ABBREVIATION: Abbreviation of the month\n- MONTH: Month as a number\n- MONTH_IN_TWO_DIGITS: Month as a number in two digits\n- YEAR: Year as a number\n- YEAR_IN_TWO_DIGITS: Year as a number in two digits\nThe default value is \"MONTH_ABBREVIATION YEAR\".\nThe default value is \"rendercv_output\".",
@@ -1929,7 +1949,8 @@
             "StackOverflow",
             "ResearchGate",
             "YouTube",
-            "Google Scholar"
+            "Google Scholar",
+            "Telegram"
           ],
           "title": "Social Network",
           "type": "string"
@@ -1952,7 +1973,15 @@
   "description": "RenderCV data model.",
   "properties": {
     "cv": {
-      "$ref": "#/$defs/CurriculumVitae",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/CurriculumVitae"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
       "description": "The data of the CV.",
       "title": "Curriculum Vitae"
     },
@@ -2055,9 +2084,6 @@
       "title": "RenderCV Settings"
     }
   },
-  "required": [
-    "cv"
-  ],
   "title": "RenderCV",
   "type": "object",
   "$id": "https://raw.githubusercontent.com/sinaatalay/rendercv/main/schema.json",
