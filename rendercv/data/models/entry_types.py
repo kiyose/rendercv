@@ -182,6 +182,11 @@ class OneLineEntry(RenderCVBaseModelWithExtraKeys):
         title="Details",
         description="The details of the OneLineEntry.",
     )
+    tags: Optional[list[str]] = pydantic.Field(
+        default = [],
+        title="Tags",
+        description="Tags defining the content; used to include or exclude the entry.", 
+    )
 
 
 class BulletEntry(RenderCVBaseModelWithExtraKeys):
@@ -190,6 +195,11 @@ class BulletEntry(RenderCVBaseModelWithExtraKeys):
     bullet: str = pydantic.Field(
         title="Bullet",
         description="The bullet of the BulletEntry.",
+    )
+    tags: Optional[list[str]] = pydantic.Field(
+        default = [],
+        title="Tags",
+        description="Tags defining the content; used to include or exclude the entry.", 
     )
 
 
@@ -206,6 +216,11 @@ class EntryWithDate(RenderCVBaseModelWithExtraKeys):
             ' an arbitrary string like "Fall 2023".'
         ),
         examples=["2020-09-24", "Fall 2023"],
+    )
+    tags: Optional[list[str]] = pydantic.Field(
+        default = [],
+        title="Tags",
+        description="Tags defining the content; used to include or exclude the entry.", 
     )
 
     @functools.cached_property
@@ -330,6 +345,11 @@ class EntryBase(EntryWithDate):
         title="Highlights",
         description="The highlights of the event as a list of strings.",
         examples=["Did this.", "Did that."],
+    )
+    tags: Optional[list[str]] = pydantic.Field(
+        default = [],
+        title="Tags",
+        description="Tags defining the content; used to include or exclude the entry.", 
     )
 
     @pydantic.model_validator(mode="after")  # type: ignore
