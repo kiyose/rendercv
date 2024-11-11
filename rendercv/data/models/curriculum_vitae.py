@@ -212,13 +212,19 @@ def validate_a_section(
             "entries": sections_input,
         }
 
+        def entry_is_disabled(entry) -> bool:
+            if isinstance(entry, str):
+                return False
+            else:
+                return entry.disabled
+
         try:
             section_object = section_type.model_validate(
                 section,
             )
             # Unfortunately Pydantic does not support filtering of collections(see https://github.com/pydantic/pydantic/discussions/9027)
             # Here we filter out any sections that are marked as disabled.
-            sections_input = list(filter(lambda x: not x.disabled , section_object.entries))
+            sections_input = list(filter(lambda x: not entry_is_disabled(x), section_object.entries))
 
         except pydantic.ValidationError as e:
             new_error = ValueError(
