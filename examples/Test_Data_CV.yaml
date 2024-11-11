@@ -1,0 +1,58 @@
+cv:
+  name: John Doe
+  location: Your FLEEB Location
+  email: youremail@yourdomain.com
+  phone: tel:+90-541-999-99-99
+  website: https://yourwebsite.com/
+  social_networks:
+    - network: LinkedIn
+      username: yourusername
+    - network: GitHub
+      username: yourusername
+  sections:
+    three_entries:
+      - bullet: Each section title is arbitrary and each section
+          contains a list of entries.
+        tags:
+        - foo
+        - bar
+      - bullet: 'There are 7 unique entry types: *BulletEntry*,
+          *TextEntry*, *EducationEntry*, *ExperienceEntry*, *NormalEntry*,
+          *PublicationEntry*, and *OneLineEntry*.'
+        tags:
+        - bar
+      - bullet: Select a section title, pick an entry type, and
+          start writing your section!
+        tags:
+        - foo
+
+    two_entries:
+      - bullet: Each section title is arbitrary and each section
+          contains a list of entries.
+      - bullet: 'There are 7 unique entry types: *BulletEntry*,
+          *TextEntry*, *EducationEntry*, *ExperienceEntry*, *NormalEntry*,
+          *PublicationEntry*, and *OneLineEntry*.'
+      - bullet: Select a section title, pick an entry type, and
+          start writing your section!
+        disabled: true
+    one_entry:
+      - bullet: Each section title is arbitrary and each section
+          contains a list of entries.
+      - bullet: 'There are 7 unique entry types: *BulletEntry*,
+          *TextEntry*, *EducationEntry*, *ExperienceEntry*, *NormalEntry*,
+          *PublicationEntry*, and *OneLineEntry*.'
+        disabled: true
+      - bullet: Select a section title, pick an entry type, and
+          start writing your section!
+        disabled: true
+    no_entry:
+      - bullet: Each section title is arbitrary and each section
+          contains a list of entries.
+        disabled: true
+      - bullet: 'There are 7 unique entry types: *BulletEntry*,
+          *TextEntry*, *EducationEntry*, *ExperienceEntry*, *NormalEntry*,
+          *PublicationEntry*, and *OneLineEntry*.'
+        disabled: true
+      - bullet: Select a section title, pick an entry type, and
+          start writing your section!
+        disabled: true
