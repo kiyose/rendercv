@@ -416,6 +416,11 @@ class CurriculumVitae(RenderCVBaseModelWithExtraKeys):
         title="Social Networks",
         description="The social networks of the person.",
     )
+    disabled_sections: Optional[list[str]] = pydantic.Field(
+        default=None,
+        title="Disabled Sections",
+        description="Sections that should not be shown in the final CV.",
+    )
     sections_input: Sections = pydantic.Field(
         default=None,
         title="Sections",
@@ -537,6 +542,10 @@ class CurriculumVitae(RenderCVBaseModelWithExtraKeys):
 
         if self.sections_input is not None:
             for title, entries in self.sections_input.items():
+                # Skip any sections that have been listed in the disabled_sections
+                if self.disabled_sections and title in self.disabled_sections:
+                    continue
+
                 # Skip any sections that are empty, sections might be empty because
                 # all the entries have been filtered out
                 if not entries:
