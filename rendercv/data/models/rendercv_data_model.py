@@ -18,6 +18,8 @@ from .rendercv_settings import RenderCVSettings
 class RenderCVDataModel(RenderCVBaseModelWithoutExtraKeys):
     """This class binds both the CV and the design information together."""
 
+    # Note: Unfortunately making this optional is required in order to build a json schema that handles seperating configurtion from cv content.
+    #       If pydantic allowed for schema generation with `required{anyOf=[]}` syntax it would be more elegant.
     cv: Optional[CurriculumVitae] = pydantic.Field(
         default = None,
         title="Curriculum Vitae",
