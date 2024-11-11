@@ -212,13 +212,19 @@ def validate_a_section(
             "entries": sections_input,
         }
 
+        def entry_is_disabled(entry) -> bool:
+            if isinstance(entry, str):
+                return False
+            else:
+                return entry.disabled
+
         try:
             section_object = section_type.model_validate(
                 section,
             )
             # Unfortunately Pydantic does not support filtering of collections(see https://github.com/pydantic/pydantic/discussions/9027)
             # Here we filter out any sections that are marked as disabled.
-            sections_input = list(filter(lambda x: not x.disabled , section_object.entries))
+            sections_input = list(filter(lambda x: not entry_is_disabled(x), section_object.entries))
 
         except pydantic.ValidationError as e:
             new_error = ValueError(
@@ -410,6 +416,11 @@ class CurriculumVitae(RenderCVBaseModelWithExtraKeys):
         title="Social Networks",
         description="The social networks of the person.",
     )
+    disabled_sections: Optional[list[str]] = pydantic.Field(
+        default=None,
+        title="Disabled Sections",
+        description="Sections that should not be shown in the final CV.",
+    )
     sections_input: Sections = pydantic.Field(
         default=None,
         title="Sections",
@@ -531,10 +542,14 @@ class CurriculumVitae(RenderCVBaseModelWithExtraKeys):
 
         if self.sections_input is not None:
             for title, entries in self.sections_input.items():
+                # Skip any sections that have been listed in the disabled_sections
+                if self.disabled_sections and title in self.disabled_sections:
+                    continue
+
                 # Skip any sections that are empty, sections might be empty because
                 # all the entries have been filtered out
                 if not entries:
-                    break
+                    continue
 
                 title = computers.dictionary_key_to_proper_section_title(title)
 
