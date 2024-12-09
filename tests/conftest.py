@@ -3,17 +3,17 @@
 import copy
 import filecmp
 import itertools
-import os
 import pathlib
 import shutil
 import typing
-from typing import Optional, Type
+from typing import Optional
 
 import jinja2
 import pydantic
 import pydantic_extra_types.phone_numbers as pydantic_phone_numbers
 import pypdf
 import pytest
+import ruamel.yaml
 
 from rendercv import data
 from rendercv.renderer import templater
@@ -154,7 +154,7 @@ def return_a_value_for_a_field_type(
         return_a_value_for_a_field_type("institution", str)
         ```
         returns
-        `#!python "Boğaziçi University"`
+        `"Boğaziçi University"`
 
     Args:
         field_type: The type of the field.
@@ -226,20 +226,20 @@ def return_a_value_for_a_field_type(
 
     if field in field_dictionary:
         return field_dictionary[field]
-    elif type(None) in typing.get_args(field_type):
+    if type(None) in typing.get_args(field_type):
         return return_a_value_for_a_field_type(field, field_type.__args__[0])
-    elif typing.get_origin(field_type) == typing.Literal:
+    if typing.get_origin(field_type) == typing.Literal:
         return field_type.__args__[0]
-    elif typing.get_origin(field_type) == typing.Union:
+    if typing.get_origin(field_type) == typing.Union:
         return return_a_value_for_a_field_type(field, field_type.__args__[0])
-    elif field_type in field_type_dictionary:
+    if field_type in field_type_dictionary:
         return field_type_dictionary[field_type]
 
     return "A string"
 
 
 def create_combinations_of_a_model(
-    model: Type[data.Entry],
+    model: type[data.Entry],
 ) -> list[data.Entry]:
     """Look at the required fields and optional fields of a model and create all
     possible combinations of them.
@@ -252,8 +252,8 @@ def create_combinations_of_a_model(
     """
     fields = typing.get_type_hints(model)
 
-    required_fields = dict()
-    optional_fields = dict()
+    required_fields = {}
+    optional_fields = {}
 
     for field, field_type in fields.items():
         value = return_a_value_for_a_field_type(field, field_type)
@@ -408,8 +408,7 @@ def are_these_two_files_the_same(file1: pathlib.Path, file2: pathlib.Path) -> bo
                 return False
 
         return True
-    else:
-        return filecmp.cmp(file1, file2)
+    return filecmp.cmp(file1, file2)
 
 
 @pytest.fixture
@@ -454,26 +453,88 @@ def run_a_function_and_check_if_output_is_the_same_as_reference(
                 # copy the output file or directory to the reference directory
                 function(tmp_path, reference_file_or_directory_path, **kwargs)
                 if output_is_a_single_file:
-                    shutil.move(output_file_path, reference_file_or_directory_path)
+                    shutil.move(output_file_path, reference_file_or_directory_path)  # type: ignore
                 else:
                     shutil.move(tmp_path, reference_file_or_directory_path)
-                    os.mkdir(tmp_path)
+                    pathlib.Path.mkdir(tmp_path)
 
         function(tmp_path, reference_file_or_directory_path, **kwargs)
 
         if output_is_a_single_file:
             return are_these_two_files_the_same(
-                output_file_path, reference_file_or_directory_path
+                output_file_path,  # type: ignore
+                reference_file_or_directory_path,  # type: ignore
             )
-        else:
-            return are_these_two_directories_the_same(
-                tmp_path, reference_file_or_directory_path
-            )
+        return are_these_two_directories_the_same(
+            tmp_path, reference_file_or_directory_path
+        )
 
     return function
 
 
 @pytest.fixture
-def input_file_path(testdata_directory_path) -> pathlib.Path:
+def input_file_path(tmp_path, testdata_directory_path) -> pathlib.Path:
     """Return the path to the input file."""
-    return testdata_directory_path / "John_Doe_CV.yaml"
+    # copy the input file to the temporary directory
+    input_file_path = testdata_directory_path / "John_Doe_CV.yaml"
+    # Update the auxiliary files if update_testdata is True
+    if update_testdata:
+        # create testdata directory if it doesn't exist
+        if not input_file_path.parent.exists():
+            input_file_path.parent.mkdir()
+
+        input_dictionary = {
+            "cv": {
+                "name": "John Doe",
+                "sections": {"test_section": ["this is a text entry."]},
+            },
+        }
+
+        # dump the dictionary to a yaml file
+        yaml_object = ruamel.yaml.YAML()
+        yaml_object.dump(input_dictionary, input_file_path)
+
+    shutil.copyfile(input_file_path, tmp_path / "John_Doe_CV.yaml")
+    return tmp_path / "John_Doe_CV.yaml"
+
+
+@pytest.fixture
+def design_file_path(tmp_path, testdata_directory_path) -> pathlib.Path:
+    """Return the path to the input file."""
+    design_settings_file_path = testdata_directory_path / "John_Doe_CV_design.yaml"
+    if update_testdata:
+        design_settings_file_path.write_text("design:\n  theme: classic")
+
+    shutil.copyfile(design_settings_file_path, tmp_path / "John_Doe_CV_design.yaml")
+    return tmp_path / "John_Doe_CV_design.yaml"
+
+
+@pytest.fixture
+def locale_catalog_file_path(tmp_path, testdata_directory_path) -> pathlib.Path:
+    """Return the path to the input file."""
+    locale_catalog_file_path = (
+        testdata_directory_path / "John_Doe_CV_locale_catalog.yaml"
+    )
+    if update_testdata:
+        locale_catalog_file_path.write_text("locale_catalog:\n  years: yil")
+    shutil.copyfile(
+        locale_catalog_file_path, tmp_path / "John_Doe_CV_locale_catalog.yaml"
+    )
+    return tmp_path / "John_Doe_CV_locale_catalog.yaml"
+
+
+@pytest.fixture
+def rendercv_settings_file_path(tmp_path, testdata_directory_path) -> pathlib.Path:
+    """Return the path to the input file."""
+    rendercv_settings_file_path = (
+        testdata_directory_path / "John_Doe_CV_rendercv_settings.yaml"
+    )
+    if update_testdata:
+        rendercv_settings_file_path.write_text(
+            "rendercv_settings:\n  render_command:\n    dont_generate_html: true"
+        )
+
+    shutil.copyfile(
+        rendercv_settings_file_path, tmp_path / "John_Doe_CV_rendercv_settings.yaml"
+    )
+    return tmp_path / "John_Doe_CV_rendercv_settings.yaml"

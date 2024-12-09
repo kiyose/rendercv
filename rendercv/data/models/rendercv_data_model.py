@@ -18,6 +18,9 @@ from .rendercv_settings import RenderCVSettings
 class RenderCVDataModel(RenderCVBaseModelWithoutExtraKeys):
     """This class binds both the CV and the design information together."""
 
+    # `cv` is normally required, but don't enforce it in JSON Schema to allow
+    # `design` or `locale_catalog` fields to have individual YAML files.
+    model_config = pydantic.ConfigDict(json_schema_extra={"required": []})
     cv: CurriculumVitae = pydantic.Field(
         title="Curriculum Vitae",
         description="The data of the CV.",
@@ -53,3 +56,6 @@ class RenderCVDataModel(RenderCVBaseModelWithoutExtraKeys):
             LocaleCatalog()
 
         return locale_catalog
+
+
+rendercv_data_model_fields = tuple(RenderCVDataModel.model_fields.keys())

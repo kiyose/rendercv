@@ -9,7 +9,7 @@ from typing import Optional
 import pydantic
 
 from .base import RenderCVBaseModelWithoutExtraKeys
-from .computers import convert_string_to_path
+from .computers import convert_string_to_path, replace_placeholders
 
 file_path_placeholder_description = (
     "The following placeholders can be used:\n- FULL_MONTH_NAME: Full name of the"
@@ -36,6 +36,32 @@ file_path_placeholder_description_without_default = (
 
 class RenderCommandSettings(RenderCVBaseModelWithoutExtraKeys):
     """This class is the data model of the `render` command's settings."""
+
+    design: Optional[str] = pydantic.Field(
+        default=None,
+        title="`design` Field's YAML File",
+        description=(
+            "The file path to the yaml file containing the `design` field separately."
+        ),
+    )
+
+    rendercv_settings: Optional[str] = pydantic.Field(
+        default=None,
+        title="`rendercv_settings` Field's YAML File",
+        description=(
+            "The file path to the yaml file containing the `rendercv_settings` field"
+            " separately."
+        ),
+    )
+
+    locale_catalog: Optional[str] = pydantic.Field(
+        default=None,
+        title="`locale_catalog` Field's YAML File",
+        description=(
+            "The file path to the yaml file containing the `locale_catalog` field"
+            " separately."
+        ),
+    )
 
     output_folder_name: str = pydantic.Field(
         default="rendercv_output",
@@ -103,7 +129,7 @@ class RenderCommandSettings(RenderCVBaseModelWithoutExtraKeys):
 
     dont_generate_html: bool = pydantic.Field(
         default=False,
-        title="Generate HTML Flag",
+        title="Don't Generate HTML",
         description=(
             "A boolean value to determine whether the HTML file will be generated. The"
             " default value is False."
@@ -112,7 +138,7 @@ class RenderCommandSettings(RenderCVBaseModelWithoutExtraKeys):
 
     dont_generate_markdown: bool = pydantic.Field(
         default=False,
-        title="Generate Markdown Flag",
+        title="Don't Generate Markdown",
         description=(
             "A boolean value to determine whether the Markdown file will be generated."
             " The default value is False."
@@ -121,14 +147,35 @@ class RenderCommandSettings(RenderCVBaseModelWithoutExtraKeys):
 
     dont_generate_png: bool = pydantic.Field(
         default=False,
-        title="Generate PNG Flag",
+        title="Don't Generate PNG",
         description=(
             "A boolean value to determine whether the PNG file will be generated. The"
             " default value is False."
         ),
     )
 
+    watch: bool = pydantic.Field(
+        default=False,
+        title="Re-run RenderCV When the Input File is Updated",
+        description=(
+            "A boolean value to determine whether to re-run RenderCV when the input"
+            "file is updated. The default value is False."
+        ),
+    )
+
     @pydantic.field_validator(
+        "output_folder_name",
+        mode="before",
+    )
+    @classmethod
+    def replace_placeholders(cls, value: str) -> str:
+        """Replaces the placeholders in a string with the corresponding values."""
+        return replace_placeholders(value)
+
+    @pydantic.field_validator(
+        "design",
+        "locale_catalog",
+        "rendercv_settings",
         "pdf_path",
         "latex_path",
         "html_path",

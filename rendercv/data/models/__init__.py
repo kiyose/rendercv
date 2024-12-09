@@ -42,28 +42,29 @@ from .entry_types import (
     available_entry_type_names,
 )
 from .locale_catalog import LocaleCatalog
-from .rendercv_data_model import RenderCVDataModel
+from .rendercv_data_model import RenderCVDataModel, rendercv_data_model_fields
 from .rendercv_settings import RenderCommandSettings, RenderCVSettings
 
 __all__ = [
-    "OneLineEntry",
     "BulletEntry",
-    "EducationEntry",
-    "ExperienceEntry",
-    "PublicationEntry",
-    "NormalEntry",
-    "SocialNetwork",
     "CurriculumVitae",
-    "LocaleCatalog",
-    "RenderCVDataModel",
-    "available_theme_options",
-    "format_date",
+    "EducationEntry",
     "Entry",
-    "available_social_networks",
-    "SectionContents",
-    "available_themes",
-    "available_entry_type_names",
+    "ExperienceEntry",
+    "LocaleCatalog",
+    "NormalEntry",
+    "OneLineEntry",
+    "PublicationEntry",
+    "RenderCVDataModel",
     "RenderCVSettings",
     "RenderCommandSettings",
+    "SectionContents",
+    "SocialNetwork",
     "available_entry_models",
+    "available_entry_type_names",
+    "available_social_networks",
+    "available_theme_options",
+    "available_themes",
+    "format_date",
+    "rendercv_data_model_fields",
 ]

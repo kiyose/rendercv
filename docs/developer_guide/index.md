@@ -22,16 +22,14 @@ There are two ways of developing RenderCV: locally or with GitHub Codespaces.
     cd rendercv
     ```
 5. RenderCV uses three virtual environments:
-    -  `default`: For the development. It contains packages like [Ruff](https://github.com/astral-sh/ruff), [Black](https://github.com/psf/black), etc.
+    -  `default`: For the development and testing. It contains packages like [Ruff](https://github.com/astral-sh/ruff), [Black](https://github.com/psf/black), [pytest](https://github.com/pytest-dev/pytest) etc.
     -  `docs`: For building the documentation.
-    -  `test`: For testing RenderCV.
-    
+
     Create the virtual environments with the following commands.
-    
+
     ```bash
     hatch env create default
     hatch env create docs
-    hatch env create test
     ```
 
 6. To use the virtual environments, either
@@ -40,15 +38,11 @@ There are two ways of developing RenderCV: locally or with GitHub Codespaces.
         ```bash
         hatch shell default
         ```
-    
+
         ```bash
         hatch shell docs
         ```
-    
-        ```bash
-        hatch shell test
-        ```
-    
+
     - Select one of the virtual environments in your Integrated Development Environment (IDE).
 
         === "Visual Studio Code"
@@ -75,29 +69,29 @@ This is done with [Development containers](https://containers.dev/), and the env
 
 These commands are defined in the [`pyproject.toml`](https://github.com/sinaatalay/rendercv/blob/main/pyproject.toml) file.
 
-- Format the code with [Black](https://github.com/psf/black)
+- Format the code with [Black](https://github.com/psf/black) and [Ruff](https://github.com/astral-sh/ruff)
     ```bash
-    hatch run default:format
+    hatch run format
     ```
 - Lint the code with [Ruff](https://github.com/astral-sh/ruff)
     ```bash
-    hatch run default:lint
+    hatch run lint
     ```
-- Sort the imports with [isort](https://github.com/timothycrosley/isort/)
+- Run [pre-commit](https://pre-commit.com/)
     ```bash
-    hatch run default:sort-imports
+    hatch run precommit
     ```
 - Check the types with [Pyright](https://github.com/RobertCraigie/pyright-python)
     ```bash
-    hatch run default:check-types
+    hatch run check-types
     ```
 - Run the tests
     ```bash
-    hatch run test:run
+    hatch run test
     ```
 - Run the tests and generate a coverage report
     ```bash
-    hatch run test:run-and-report
+    hatch run test-and-report
     ```
 - Start the development server for the documentation
     ```bash

@@ -40,7 +40,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu, windows, macos]
-        python-version: ["3.10", "3.11", "3.12"]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
 
     runs-on: ${{ matrix.os }}-latest
     steps:
@@ -57,7 +57,7 @@ jobs:
         uses: pypa/hatch@install
 
       - name: Test
-        run: hatch run test:coverage run -m pytest
+        run: hatch run test-and-report
     
       - name: Rename the coverage file
         run: mv .coverage .coverage.${{ matrix.python-version }}.${{ matrix.os }}
@@ -96,9 +96,9 @@ jobs:
 
       - name: Combine coverage files
         run: |
-          hatch run test:coverage combine coverage
-          hatch run test:coverage report
-          hatch run test:coverage html --show-contexts --title "RenderCV coverage for ${{ github.sha }}"
+          hatch run coverage combine coverage
+          hatch run coverage report
+          hatch run coverage html --show-contexts --title "RenderCV coverage for ${{ github.sha }}"
 
       - name: Upload the coverage report to smokeshow
         run: |

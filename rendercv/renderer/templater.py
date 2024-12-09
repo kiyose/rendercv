@@ -71,7 +71,7 @@ class TemplatedFile:
                     entry.__setattr__(key, "")
 
         # The arguments of the template can be used in the template file:
-        result = template.render(
+        return template.render(
             cv=self.cv,
             design=self.design,
             entry=entry,
@@ -79,15 +79,12 @@ class TemplatedFile:
             **kwargs,
         )
 
-        return result
-
     def get_full_code(self, main_template_name: str, **kwargs) -> str:
         """Combine all the templates to get the full code of the file."""
         main_template = self.environment.get_template(main_template_name)
-        latex_code = main_template.render(
+        return main_template.render(
             **kwargs,
         )
-        return latex_code
 
 
 class LaTeXFile(TemplatedFile):
@@ -171,9 +168,7 @@ class LaTeXFile(TemplatedFile):
             **kwargs,
         )
 
-        result = revert_nested_latex_style_commands(result)
-
-        return result
+        return revert_nested_latex_style_commands(result)
 
     def get_full_code(self) -> str:
         """Get the $\\LaTeX$ code of the file.
@@ -219,10 +214,7 @@ class MarkdownFile(TemplatedFile):
             )
             entries: list[str] = []
             for i, entry in enumerate(section.entries):
-                if i == 0:
-                    is_first_entry = True
-                else:
-                    is_first_entry = False
+                is_first_entry = bool(i == 0)
                 entries.append(
                     self.template(
                         section.entry_type,
@@ -252,14 +244,13 @@ class MarkdownFile(TemplatedFile):
         Returns:
             The templated file.
         """
-        result = super().template(
+        return super().template(
             "markdown",
             template_name,
             "md",
             entry,
             **kwargs,
         )
-        return result
 
     def get_full_code(self) -> str:
         """Get the Markdown code of the file.
@@ -325,7 +316,7 @@ def escape_latex_characters(latex_string: str) -> str:
         escape_latex_characters("This is a # string.")
         ```
         returns
-        `#!python "This is a \\# string."`
+        `"This is a \\# string."`
 
     Args:
         latex_string: The string to escape.
@@ -338,7 +329,7 @@ def escape_latex_characters(latex_string: str) -> str:
     escape_characters = {
         "{": "\\{",
         "}": "\\}",
-        "\\": "\\textbackslash{}",
+        # "\\": "\\textbackslash{}",
         "#": "\\#",
         "%": "\\%",
         "&": "\\&",
@@ -377,6 +368,12 @@ def escape_latex_characters(latex_string: str) -> str:
         new_equation = equation.replace("$$", "$")
         new_equations.append(new_equation)
 
+    # Don't touch latex commands:
+    # Find all the latex commands in the sentence:
+    latex_commands = re.findall(r"\\[a-zA-Z]+\{.*?\}", latex_string)
+    for i, latex_command in enumerate(latex_commands):
+        latex_string = latex_string.replace(latex_command, f"!!-latex{i}-!!")
+
     # Loop through the letters of the sentence and if you find an escape character,
     # replace it with its LaTeX equivalent:
     latex_string = latex_string.translate(translation_map)
@@ -389,6 +386,10 @@ def escape_latex_characters(latex_string: str) -> str:
     for i, new_equation in enumerate(new_equations):
         latex_string = latex_string.replace(f"!!-equation{i}-!!", new_equation)
 
+    # Replace !!-latex{i}-!!" with the original latex commands:
+    for i, latex_command in enumerate(latex_commands):
+        latex_string = latex_string.replace(f"!!-latex{i}-!!", latex_command)
+
     return latex_string
 
 
@@ -400,12 +401,14 @@ def markdown_to_latex(markdown_string: str) -> str:
 
     Example:
         ```python
-        markdown_to_latex("This is a **bold** text with an [*italic link*](https://google.com).")
+        markdown_to_latex(
+            "This is a **bold** text with an [*italic link*](https://google.com)."
+        )
         ```
 
         returns
 
-        `#!python "This is a \\textbf{bold} text with a \\href{https://google.com}{\\textit{link}}."`
+        `"This is a \\textbf{bold} text with a \\href{https://google.com}{\\textit{link}}."`
 
     Args:
         markdown_string: The Markdown string to convert.
@@ -453,9 +456,7 @@ def markdown_to_latex(markdown_string: str) -> str:
 
     #         markdown_string = markdown_string.replace(old_code_text, new_code_text)
 
-    latex_string = markdown_string
-
-    return latex_string
+    return markdown_string
 
 
 def transform_markdown_sections_to_latex_sections(
@@ -485,19 +486,19 @@ def transform_markdown_sections_to_latex_sections(
                 # Then it means it's one of the other entries.
                 fields_to_skip = ["doi"]
                 entry_as_dict = entry.model_dump()
-                for entry_key, value in entry_as_dict.items():
+                for entry_key, inner_value in entry_as_dict.items():
                     if entry_key in fields_to_skip:
                         continue
-                    if isinstance(value, str):
-                        result = markdown_to_latex(escape_latex_characters(value))
+                    if isinstance(inner_value, str):
+                        result = markdown_to_latex(escape_latex_characters(inner_value))
                         setattr(entry, entry_key, result)
-                    elif isinstance(value, list):
-                        for j, item in enumerate(value):
+                    elif isinstance(inner_value, list):
+                        for j, item in enumerate(inner_value):
                             if isinstance(item, str):
-                                value[j] = markdown_to_latex(
+                                inner_value[j] = markdown_to_latex(
                                     escape_latex_characters(item)
                                 )
-                        setattr(entry, entry_key, value)
+                        setattr(entry, entry_key, inner_value)
                 transformed_list.append(entry)
 
         sections[key] = transformed_list
@@ -568,7 +569,7 @@ def make_matched_part_bold(value: str, match_str: Optional[str] = None) -> str:
 
         returns
 
-        `#!python "\\textbf{Hello} World!"`
+        `"\\textbf{Hello} World!"`
 
     Args:
         value: The string to make bold.
@@ -593,7 +594,7 @@ def make_matched_part_underlined(value: str, match_str: Optional[str] = None) ->
 
         returns
 
-        `#!python "\\underline{Hello} World!"`
+        `"\\underline{Hello} World!"`
 
     Args:
         value: The string to make underlined.
@@ -618,7 +619,7 @@ def make_matched_part_italic(value: str, match_str: Optional[str] = None) -> str
 
         returns
 
-        `#!python "\\textit{Hello} World!"`
+        `"\\textit{Hello} World!"`
 
     Args:
         value: The string to make italic.
@@ -645,7 +646,7 @@ def make_matched_part_non_line_breakable(
 
         returns
 
-        `#!python "\\mbox{Hello} World!"`
+        `"\\mbox{Hello} World!"`
 
     Args:
         value: The string to disable line breaks.
@@ -669,7 +670,7 @@ def abbreviate_name(name: Optional[str]) -> str:
 
         returns
 
-        `#!python "J. Doe"`
+        `"J. Doe"`
 
     Args:
         name: The name to abbreviate.
@@ -688,9 +689,8 @@ def abbreviate_name(name: Optional[str]) -> str:
     first_names = name.split(" ")[:-1]
     first_names_initials = [first_name[0] + "." for first_name in first_names]
     last_name = name.split(" ")[-1]
-    abbreviated_name = " ".join(first_names_initials) + " " + last_name
 
-    return abbreviated_name
+    return " ".join(first_names_initials) + " " + last_name
 
 
 def divide_length_by(length: str, divider: float) -> str:
@@ -706,7 +706,7 @@ def divide_length_by(length: str, divider: float) -> str:
 
         returns
 
-        `#!python "5.2cm"`
+        `"5.2cm"`
 
     Args:
         length: The length to divide.
@@ -719,12 +719,14 @@ def divide_length_by(length: str, divider: float) -> str:
     value = re.search(r"\d+\.?\d*", length)
 
     if value is None:
-        raise ValueError(f"Invalid length {length}!")
-    else:
-        value = value.group()
+        message = f"Invalid length {length}!"
+        raise ValueError(message)
+
+    value = value.group()
 
     if divider <= 0:
-        raise ValueError(f"The divider must be greater than 0, but got {divider}!")
+        message = f"The divider must be greater than 0, but got {divider}!"
+        raise ValueError(message)
 
     unit = re.findall(r"[^\d\.\s]+", length)[0]
 
@@ -739,9 +741,9 @@ def get_an_item_with_a_specific_attribute_value(
     Example:
         ```python
         get_an_item_with_a_specific_attribute_value(
-            [item1, item2], # where item1.name = "John" and item2.name = "Jane"
+            [item1, item2],  # where item1.name = "John" and item2.name = "Jane"
             "name",
-            "Jane"
+            "Jane",
         )
         ```
         returns
@@ -760,14 +762,13 @@ def get_an_item_with_a_specific_attribute_value(
     if items is not None:
         for item in items:
             if not hasattr(item, attribute):
-                raise AttributeError(
-                    f"The attribute {attribute} doesn't exist in the item {item}!"
-                )
-            else:
-                if getattr(item, attribute) == value:
-                    return item
-    else:
-        return None
+                message = f"The attribute {attribute} doesn't exist in the item {item}!"
+                raise AttributeError(message)
+
+            if getattr(item, attribute) == value:
+                return item
+
+    return None
 
 
 # Only one Jinja2 environment is needed for all the templates:
@@ -780,7 +781,7 @@ def setup_jinja2_environment() -> jinja2.Environment:
     Returns:
         The theme environment.
     """
-    global jinja2_environment
+    global jinja2_environment  # noqa: PLW0603
     themes_directory = pathlib.Path(__file__).parent.parent / "themes"
 
     if jinja2_environment is None:
@@ -823,7 +824,10 @@ def setup_jinja2_environment() -> jinja2.Environment:
     else:
         # update the loader in case the current working directory has changed:
         jinja2_environment.loader = jinja2.FileSystemLoader(
-            [pathlib.Path.cwd(), themes_directory]
+            [
+                pathlib.Path.cwd(),
+                themes_directory,
+            ]
         )
 
     return jinja2_environment

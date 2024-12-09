@@ -4,7 +4,8 @@ to print nice-looking messages to the terminal.
 """
 
 import functools
-from typing import Callable, Optional
+from collections.abc import Callable
+from typing import Optional
 
 import jinja2
 import pydantic
@@ -125,8 +126,7 @@ def warn_if_new_version_is_available() -> bool:
             f" and the latest version is v{latest_version}."
         )
         return True
-    else:
-        return False
+    return False
 
 
 def welcome():
@@ -188,8 +188,6 @@ def error(text: Optional[str] = None, exception: Optional[Exception] = None):
         print(f"\n[bold red]{text}\n")
     else:
         print()
-
-    raise typer.Exit(code=4)
 
 
 def information(text: str):
@@ -259,9 +257,9 @@ def print_validation_errors(exception: pydantic.ValidationError):
             location = error_object["loc"]
             ctx_object = error_object["ctx"]
             if "error" in ctx_object:
-                error_object = ctx_object["error"]
-                if hasattr(error_object, "__cause__"):
-                    cause_object = error_object.__cause__
+                inner_error_object = ctx_object["error"]
+                if hasattr(inner_error_object, "__cause__"):
+                    cause_object = inner_error_object.__cause__
                     cause_object_errors = cause_object.errors()
                     for cause_error_object in cause_object_errors:
                         # we use [1:] to avoid `entries` location. It is a location for
@@ -276,10 +274,9 @@ def print_validation_errors(exception: pydantic.ValidationError):
     # (e.g. avoid stuff like .end_date.literal['present'])
     unwanted_locations = ["tagged-union", "list", "literal", "int", "constrained-str"]
     for error_object in errors:
-        location = error_object["loc"]
+        location = [str(location_element) for location_element in error_object["loc"]]
         new_location = [str(location_element) for location_element in location]
         for location_element in location:
-            location_element = str(location_element)
             for unwanted_location in unwanted_locations:
                 if unwanted_location in location_element:
                     new_location.remove(location_element)
@@ -324,7 +321,7 @@ def print_validation_errors(exception: pydantic.ValidationError):
 
         # If the input is a dictionary or a list (the model itself fails to validate),
         # then don't show the input. It looks confusing and it is not helpful.
-        if isinstance(input, (dict, list)):
+        if isinstance(input, dict | list):
             input = ""
 
         new_error = {
@@ -355,11 +352,12 @@ def print_validation_errors(exception: pydantic.ValidationError):
         )
 
     print(table)
-    error()  # exit the program
 
 
-def handle_and_print_raised_exceptions(function: Callable) -> Callable:
-    """Return a wrapper function that handles exceptions.
+def handle_and_print_raised_exceptions_without_exit(function: Callable) -> Callable:
+    """Return a wrapper function that handles exceptions. It does not exit the program
+    after an exception is raised. It just prints the error message and continues the
+    execution.
 
     A decorator in Python is a syntactic convenience that allows a Python to interpret
     the code below:
@@ -387,6 +385,7 @@ def handle_and_print_raised_exceptions(function: Callable) -> Callable:
 
     @functools.wraps(function)
     def wrapper(*args, **kwargs):
+        code = 4
         try:
             function(*args, **kwargs)
         except pydantic.ValidationError as e:
@@ -425,5 +424,49 @@ def handle_and_print_raised_exceptions(function: Callable) -> Callable:
             error(exception=e)
         except Exception as e:
             raise e
+        else:
+            code = 0
+
+        return code
+
+    return wrapper
+
+
+def handle_and_print_raised_exceptions(function: Callable) -> Callable:
+    """Return a wrapper function that handles exceptions. It exits the program after an
+    exception is raised.
+
+    A decorator in Python is a syntactic convenience that allows a Python to interpret
+    the code below:
+
+    ```python
+    @handle_exceptions
+    def my_function():
+        pass
+    ```
+
+    as
+
+    ```python
+    my_function = handle_exceptions(my_function)
+    ```
+
+    which means that the function `my_function` is modified by the `handle_exceptions`.
+
+    Args:
+        function: The function to be wrapped.
+
+    Returns:
+        The wrapped function.
+    """
+
+    @functools.wraps(function)
+    def wrapper(*args, **kwargs):
+        without_exit_wrapper = handle_and_print_raised_exceptions_without_exit(function)
+
+        code = without_exit_wrapper(*args, **kwargs)
+
+        if code != 0:
+            raise typer.Exit(code)
 
     return wrapper

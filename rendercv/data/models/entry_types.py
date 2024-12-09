@@ -119,8 +119,10 @@ def validate_and_adjust_dates_for_an_entry(
             end_date_object = computers.get_date_object(end_date)
 
             if start_date_object > end_date_object:
+                message = '"start_date" can not be after "end_date"!'
+
                 raise ValueError(
-                    '"start_date" can not be after "end_date"!',
+                    message,
                     "start_date",  # This is the location of the error
                     str(start_date),  # This is value of the error
                 )
@@ -267,8 +269,7 @@ class PublicationEntryBase(RenderCVBaseModelWithExtraKeys):
 
         if doi_is_provided:
             return f"https://doi.org/{self.doi}"
-        else:
-            return ""
+        return ""
 
     @functools.cached_property
     def clean_url(self) -> str:
@@ -279,8 +280,7 @@ class PublicationEntryBase(RenderCVBaseModelWithExtraKeys):
 
         if url_is_provided:
             return computers.make_a_url_clean(str(self.url))  # type: ignore
-        else:
-            return ""
+        return ""
 
 
 # The following class is to ensure PublicationEntryBase keys come first,
@@ -291,8 +291,6 @@ class PublicationEntry(EntryWithDate, PublicationEntryBase):
     created by combining the `EntryWithDate` and `PublicationEntryBase` classes to have
     the fields in the correct order.
     """
-
-    pass
 
 
 class EntryBase(EntryWithDate):
@@ -354,7 +352,7 @@ class EntryBase(EntryWithDate):
             entry = dm.EntryBase(start_date="2020-10-11", end_date="2021-04-04").date_string
             ```
             returns
-            `#!python "Nov 2020 to Apr 2021"`
+            `"Nov 2020 to Apr 2021"`
         """
         return computers.compute_date_string(
             start_date=self.start_date, end_date=self.end_date, date=self.date
@@ -368,10 +366,12 @@ class EntryBase(EntryWithDate):
 
         Example:
             ```python
-            entry = dm.EntryBase(start_date="2020-10-11", end_date="2021-04-04").date_string_only_years
+            entry = dm.EntryBase(
+                start_date="2020-10-11", end_date="2021-04-04"
+            ).date_string_only_years
             ```
             returns
-            `#!python "2020 to 2021"`
+            `"2020 to 2021"`
         """
         return computers.compute_date_string(
             start_date=self.start_date,
@@ -405,8 +405,6 @@ class NormalEntry(EntryBase, NormalEntryBase):
     correct order.
     """
 
-    pass
-
 
 class ExperienceEntryBase(RenderCVBaseModelWithExtraKeys):
     """This class is the parent class of the `ExperienceEntry` class."""
@@ -426,8 +424,6 @@ class ExperienceEntry(EntryBase, ExperienceEntryBase):
     created by combining the `EntryBase` and `ExperienceEntryBase` classes to have the
     fields in the correct order.
     """
-
-    pass
 
 
 class EducationEntryBase(RenderCVBaseModelWithExtraKeys):
@@ -454,8 +450,6 @@ class EducationEntry(EntryBase, EducationEntryBase):
     created by combining the `EntryBase` and `EducationEntryBase` classes to have the
     fields in the correct order.
     """
-
-    pass
 
 
 # ======================================================================================
@@ -489,8 +483,8 @@ ListOfEntries = (
 # Entry.__args__[:-1] is a tuple of all the entry types except `str``:
 # `str` (TextEntry) is not included because it's validation handled differently. It is
 # not a Pydantic model, but a string.
-available_entry_models = list(Entry.__args__[:-1])
+available_entry_models = tuple(Entry.__args__[:-1])
 
-available_entry_type_names = [
-    entry_type.__name__ for entry_type in available_entry_models
-] + ["TextEntry"]
+available_entry_type_names = tuple(
+    [entry_type.__name__ for entry_type in available_entry_models] + ["TextEntry"]
+)
